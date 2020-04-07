@@ -7,6 +7,7 @@ use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use App\Models\Topic;
+use Auth;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
@@ -32,4 +33,14 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return $this->id == $model->user_id;
     }
+
+    public function topicNotify($instance)
+{
+    // 如果要通知的人是当前用户，就不必通知了！
+    if ($this->id == Auth::id()) {
+        return;
+    }
+    $this->increment('notification_count');
+    $this->notify($instance);
+}
 }
