@@ -10,20 +10,23 @@ use App\Notifications\TopicReplied;
 
 class ReplyObserver
 {
+    public function created(Reply $reply)
+    {
+    $reply->topic->updateReplyCount();
+    // 通知作者话题被回复了
+    $reply->topic->user->topicNotify(new TopicReplied($reply));
+    }
+
     public function creating(Reply $reply)
     {
-        $reply->topic->reply_count = $reply->topic->replies->count();
 
         $reply->content = clean($reply->content, 'user_topic_body');
-;
+
         $reply->topic->save();
     }
 
-    public function created(Reply $reply)
-{
-    $topic = $reply->topic;
-    $reply->topic->increment('reply_count', 1);
-    // 通知作者话题被回复了
-    $topic->user->topicNotify(new TopicReplied($reply));
-}
+    public function deleted(Reply $reply)
+    {
+        $reply->topic->updateReplyCount();
+    }
 }
